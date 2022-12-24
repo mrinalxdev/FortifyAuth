@@ -1,22 +1,20 @@
 import bot from './assets/bot.svg'
 import user from './assets/user.svg'
 
-const from = document.querySelector('form')
+const form = document.querySelector('form')
 const chatContainer = document.querySelector('#chat_container')
 
-
-let loadInterval; 
 
 function loader(element) {
   element.textContent = ''
 
-  loadInterval = setInterval(() => {
+  let loadInterval = setInterval(() => {
     element.textContent += '.'
 
-    if(element.textContent === '4'){
+    if(element.textContent === '....'){
       element.textContent = ''
     }   
-  },300)
+  }, 300)
 }
 
 function typeText(element, text){
@@ -30,7 +28,7 @@ function typeText(element, text){
     else {
       clearInterval(interval)
     }
-  },20)
+  }, 20)
 }
 
 function generateUniqueId (){
@@ -52,7 +50,7 @@ function chatStripe (isAi, value, uniqueId) {
             alt="${isAi ? 'bot' : 'user'}"
            />
           </div>
-            <div class="message" id=${uniqueId}>${value}</div>
+            <div class="message" id=${uniqueId}>  ${value} </div>
         </div>
       </div>   
     `
@@ -62,5 +60,25 @@ function chatStripe (isAi, value, uniqueId) {
 const handleSubmit = async (e) => {
   e.preventDefault()
 
-  const data = new FromData(form)
+  const data = new FormData(form)
+
+  chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
+  form.reset()
+
+  const uniqueId  = generateUniqueId()
+  chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
+
+  chatContainer.scrollTop = chatContainer.scrollHeight
+
+  const messageDiv = document.getElementById(uniqueId)
+
+  loader(messageDiv)
 }
+
+form.addEventListener('submit', handleSubmit)
+
+form.addEventListener('keyup', (e) => {
+  if (e.keyCode === 13) {
+    handleSubmit(e)
+  }
+})
