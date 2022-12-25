@@ -4,7 +4,20 @@ import user from './assets/user.svg'
 const form = document.querySelector('form')
 const chatContainer = document.querySelector('#chat_container')
 
+let loadInterval;
 
+
+function loader(element) {
+  element.textContent= ' ';
+
+   loadInterval = setInterval(() => {
+    element.textContent += '.'
+
+    if(element.textContext === '...'){
+      element.textContent = ''
+    }
+   }, 300)
+}
 
 function typeText(element, text){
   let index = 0
@@ -39,11 +52,11 @@ function chatStripe (isAi, value, uniqueId) {
             alt="${isAi ? 'bot' : 'user'}"
            />
           </div>
-            <div class="message" id=${uniqueId}>  ${value} </div>
+            <div class="message" id="${uniqueId}"> ${value} </div>
         </div>
       </div>   
     `
-  )
+  );
 } 
 
 const handleSubmit = async (e) => {
@@ -55,24 +68,28 @@ const handleSubmit = async (e) => {
   form.reset()
 
   const uniqueId  = generateUniqueId()
+
+  console.log(uniqueId)
   chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
 
   chatContainer.scrollTop = chatContainer.scrollHeight
 
   const messageDiv = document.getElementById(uniqueId)
 
+  loader(messageDiv)
+
   const response = await fetch('http://localhost:5000', {
-    methods: 'POST', 
+    method: 'POST', 
     headers: {
       'Content-Type' : 'application/json'
     },
     body : JSON.stringify({
-      prompt : data.get('propmt')
+      prompt : data.get('prompt')
     })
   })
 
   clearInterval(loadInterval)
-  messageDiv.innerHTML = ' '
+  messageDiv.innerHTML = " "
 
   if(response.ok) {
     const data = await response.json()
@@ -85,6 +102,9 @@ const handleSubmit = async (e) => {
     const err = await response.text()
 
     messageDiv.innerHTML = "Something Went Wrong"
+
+    alert(err)
+    
   }
 }
 
