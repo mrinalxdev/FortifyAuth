@@ -48,16 +48,67 @@ func roleMiddleware(allowedRoles ...string) func(http.Handler) http.Handler{
 			//Log Role Functionality
 
 			if roleMatched {
+				fmt.Printf("Role check passed for user %s with roles %v\n", username, user.Roles)
 
+				if preCheckFunc := getPreCheckFunc(username); preCheckFunc != nil {
+					preCheckFunc()
+				}
+
+				next.ServeHTTP(w, r)
+
+				if postCheckFunc := getPostCheckFunc(username); postCheckFunc != nil {
+					postCheckFunc()
+				}
+			} else {
+				fmt.Printf("Role check failed for user %s with roles %v\n", username, user.Roles)
+
+				http.Error(w, "Forbidden", http.StatusForbidden)
 			}
 		})
 	}
 }
 
-func getPreCheckFunc(username string) func() { return nil}
+func getPreCheckFunc(username string) func() { 
+	// defining custom post check logic based on the user
+	if username == "admin" {
+		return func() {
+			fmt.Println("Execute admin post-check logic")
+		} 
+	}
+	return nil
+}
 
-func getPostCheckFun(username string) func() {return nil}
+func getPostCheckFunc(username string) func() {
+	if username == "admin" {
+		return func() {
+			fmt.Println("Execute admin post-check logic")
+		} 
+	}
+	return nil
+}
 
-func usernameMiddleware(next http.Handler) http.Handler {return nil}
+func usernameMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		session, _ := store.Get(r, "session-name")
+		username, ok := session.Values["username"].(string)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
 
-func getUsernameFromContext(ctx context.Context) string{return nil}
+		ctx := context.WithValue(r.Context(), keyUsername, username)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func getUsernameFromContext(ctx context.Context) string {
+	username, ok := ctx.Value(keyUsername).(string)
+	if !ok {
+		return ""
+	}
+	return username
+}
+
+//Key for username
+type contextKey string
+const keyUsername contextKey = "username"
