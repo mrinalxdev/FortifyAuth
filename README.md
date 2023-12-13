@@ -1,9 +1,9 @@
-<h1 align="center">FortifyAuth</h1>
+# FaultifyAuth | A web app in go
 
-A complicated role based auth system built in Golang 
+This Golang application is a rigid implementation of user registration, login, and role-based access control. It utilizes the Gorilla mux router, middleware chaining with Alice, and session managment with Gorilla Sessions. The application supoorts in-memoery user storage and includes basic HTML templates for registration, login and others
 
-- [ ] Role-Based Access Control
-- [ ] User-Registration and Login
-- [ ] Session Management
-- [ ] Middleware Chaining
-- [ ] Static File Serving
+## Features 
+
+1. **User Registration And Login**
+2. **Role-Based Access Control**
+3. **Session Management**
